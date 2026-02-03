@@ -17,15 +17,9 @@ services:
       - key: NDD_AUTH_TOKEN
         value: ""
       - key: NDD_DATA_DIR
-        value: /data
+        value: /tmp/data
       - key: NDD_SERVER_PORT
         value: 8080
-    
-    # Persistent disk storage
-    disk:
-      name: endee-data
-      mountPath: /data
-      sizeGB: 1
     
     # Health check configuration
     healthCheckPath: /api/v1/health
