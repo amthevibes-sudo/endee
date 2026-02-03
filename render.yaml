@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: endee-server
+    env: docker
+    dockerfilePath: ./infra/Dockerfile
+    dockerContext: .
+    plan: free
+    
+    # Environment variables
+    envVars:
+      - key: BUILD_ARCH
+        value: avx2
+      - key: DEBUG
+        value: false
+      - key: NDD_NUM_THREADS
+        value: 0
+      - key: NDD_AUTH_TOKEN
+        value: ""
+      - key: NDD_DATA_DIR
+        value: /data
+      - key: NDD_SERVER_PORT
+        value: 8080
+    
+    # Persistent disk storage
+    disk:
+      name: endee-data
+      mountPath: /data
+      sizeGB: 1
+    
+    # Health check configuration
+    healthCheckPath: /api/v1/health
+    
+    # Auto-deploy on git push
+    autoDeploy: true
