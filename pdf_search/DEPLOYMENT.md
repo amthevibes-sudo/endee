@@ -1,67 +1,58 @@
-# Deployment Guide for PDF Search App
+# Deployment Guide: Split Hosting (Recommended)
 
-This application is containerized using Docker, which makes it easy to deploy to various platforms.
+This guide splits the application into two parts for easier deployment:
+1.  **Frontend (React)**: Hosted on **Vercel**.
+2.  **Backend (Python API)**: Hosted on **Railway** (or PythonAnywhere).
 
 ## Prerequisites
+- **Endee Server**: Running on your Mac.
+- **Localtunnel**: Running on your Mac to expose Endee (`npx localtunnel --port 8080`).
+- **GitHub**: You must have this code pushed to GitHub.
 
-- **Endee Server**: This application acts as a client to an Endee Vector Database. You must have an Endee server running and accessible.
-- **Docker**: If you want to build/run locally.
+---
 
-## Environment Variables
+## Part 1: Deploy Backend (Railway)
 
-You need to provide the following environment variables to the container:
+1.  **Sign up/Login** to [Railway.app](https://railway.app/).
+2.  **New Project** > **Deploy from GitHub repo**.
+3.  Select this repository.
+4.  Railway will auto-detect the `requirements.txt` and `Procfile`.
+5.  **Variables**: Go to the **Settings/Variables** tab for the new service and add:
+    - `ENDEE_HOST`: `<your-localtunnel-url>` (e.g., `calm-zebra-45.loca.lt`) - *Remove https://*
+    - `ENDEE_PORT`: `80` (or `443` if usage HTTPS)
+    - `PORT`: `8000` (Railway provides this automatically usually, but good to be safe)
+6.  **Public Networking**: Go to **Settings** > **Networking** and Generate a Domain.
+    - Copy this URL (e.g., `web-production-1234.up.railway.app`). **This is your BACKEND_URL.**
 
-- `ENDEE_HOST`: Hostname of the Endee Endee server (default: `host.docker.internal` for local dev)
-- `ENDEE_PORT`: Port of the Endee server (default: `8080`)
-- `PORT`: Port to serve the app on (default: `8000`)
+---
 
-## Local Deployment (with Docker)
+## Part 2: Deploy Frontend (Vercel)
 
-### Scenario A: Running everything on the same machine
-If you run this app on the SAME machine where Endee is running (e.g., both on your Mac):
-```bash
-docker run -p 8000:8000 \
-  -e ENDEE_HOST=host.docker.internal \
-  -e ENDEE_PORT=8080 \
-  pdf-search-app
-```
+1.  **Sign up/Login** to [Vercel.com](https://vercel.com/).
+2.  **Add New Framework Project**.
+3.  Import from **GitHub**.
+4.  **ROOT DIRECTORY**:
+    - **CRITICAL**: Click "Edit" next to Root Directory and select `pdf_search/frontend`.
+5.  **Environment Variables**:
+    - Add `VITE_API_URL`: Paste your **BACKEND_URL** (e.g., `https://web-production-1234.up.railway.app`).
+6.  **Deploy**.
 
-### Scenario B: Running on Windows, connecting to Mac (LAN)
-If you run this app on Windows, but Endee is on your Mac:
-1.  Find your Mac's LAN IP address (e.g., `192.168.1.50`).
-2.  Run the container:
-```bash
-docker run -p 8000:8000 \
-  -e ENDEE_HOST=192.168.1.50 \
-  -e ENDEE_PORT=8080 \
-  pdf-search-app
-```
+---
 
-### Step 1: Expose Endee on your Mac
-1.  On your **Mac**, install localtunnel (requires Node.js):
-    ```bash
-    npx localtunnel --port 8080
-    ```
-2.  Copy the URL it gives you (e.g., `https://calm-zebra-45.loca.lt`).
+## Part 3: Verify
 
-### Step 2: Deploy to Render
-1.  Push this code to GitHub.
-2.  Create a new **Web Service** on Render.
-3.  Connect your repo.
-4.  **Important**: Set Environment Variables:
-    - `ENDEE_HOST`: `calm-zebra-45.loca.lt` (remove `https://` and trailing slash).
-    - `ENDEE_PORT`: `80` (or `443` - localtunnel usually runs on 443 HTTPS).
-    - `PORT`: `8000`
-5.  Deploy.
+1.  Open your Vercel App URL.
+2.  It should load the UI.
+3.  The UI will try to talk to `VITE_API_URL` (Railway).
+4.  Railway will talk to `ENDEE_HOST` (Your Mac via Localtunnel).
 
-> [!TIP]
-> Localtunnel URLs often change when you restart the command. If you restart `lt`, update the `ENDEE_HOST` variable in Render.
+---
 
-> [!NOTE]
-> Detailed Render setup can be automated by using the included `render.yaml` Blueprint if you connect your account in the Render dashboard.
+## Local Development (Optional)
 
-### Troubleshooting
-
-- **Dockerfile Not Found**: If Render says `failed to read dockerfile`, check your **Root Directory** setting in Render. Since this app is in a subfolder, set **Root Directory** to `pdf_search` (or wherever the `Dockerfile` is located).
-- **Connection Refused**: If running on Windows and connecting to Mac, ensure your Mac's Firewall allows incoming connections on port 8080. You can test this by trying to open `http://<MAC_IP>:8080/api/health` in your Windows browser.
-- **Docker Not Found**: ensure Docker Desktop is installed and running.
+To run locally with this new setup:
+1.  **Backend**: `uvicorn api:app --reload`
+2.  **Frontend**:
+    - Create a `.env` file in `frontend/`.
+    - Add `VITE_API_URL=http://localhost:8000`
+    - Run `npm run dev`.
