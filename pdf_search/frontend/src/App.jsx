@@ -13,6 +13,7 @@ function App() {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
+        console.log('App initialized. Connecting to API at:', API_BASE || '(relative path)');
         fetchStats();
     }, []);
 
