@@ -37,32 +37,31 @@ docker run -p 8000:8000 \
   pdf-search-app
 ```
 
-## Cloud Deployment on Render (+ Local Endee)
-
-Since your Endee database is running locally on your Mac, Render cannot access it directly. You must use a tunneling service like **ngrok** to expose Endee securely.
-
 ### Step 1: Expose Endee on your Mac
-1.  On your **Mac**, install ngrok: `brew install ngrok/ngrok/ngrok`
-2.  Start a tunnel to your Endee port (locked to port 8080):
+1.  On your **Mac**, install localtunnel (requires Node.js):
     ```bash
-    ngrok http 8080
+    npx localtunnel --port 8080
     ```
-3.  Copy the forwarding URL (e.g., `https://1234-abcd.ngrok-free.app`).
+2.  Copy the URL it gives you (e.g., `https://calm-zebra-45.loca.lt`).
 
 ### Step 2: Deploy to Render
 1.  Push this code to GitHub.
 2.  Create a new **Web Service** on Render.
 3.  Connect your repo.
 4.  **Important**: Set Environment Variables:
-    - `ENDEE_HOST`: `1234-abcd.ngrok-free.app` (remove `https://` and trailing slash)
-    - `ENDEE_PORT`: `80` (or `443` depending on if you use http/https)
+    - `ENDEE_HOST`: `calm-zebra-45.loca.lt` (remove `https://` and trailing slash).
+    - `ENDEE_PORT`: `80` (or `443` - localtunnel usually runs on 443 HTTPS).
     - `PORT`: `8000`
 5.  Deploy.
+
+> [!TIP]
+> Localtunnel URLs often change when you restart the command. If you restart `lt`, update the `ENDEE_HOST` variable in Render.
 
 > [!NOTE]
 > Detailed Render setup can be automated by using the included `render.yaml` Blueprint if you connect your account in the Render dashboard.
 
-## Troubleshooting
+### Troubleshooting
 
+- **Dockerfile Not Found**: If Render says `failed to read dockerfile`, check your **Root Directory** setting in Render. Since this app is in a subfolder, set **Root Directory** to `pdf_search` (or wherever the `Dockerfile` is located).
 - **Connection Refused**: If running on Windows and connecting to Mac, ensure your Mac's Firewall allows incoming connections on port 8080. You can test this by trying to open `http://<MAC_IP>:8080/api/health` in your Windows browser.
 - **Docker Not Found**: ensure Docker Desktop is installed and running.
