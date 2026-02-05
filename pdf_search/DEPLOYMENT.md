@@ -1,48 +1,45 @@
-# Deployment Guide: Full Cloud (Endee + App)
+# Deployment Guide: Hybrid Cloud (Recommended)
 
-This guide helps you deploy **both** the Endee Database and the PDF Search App to the cloud (Render), removing the need for local tunnels.
+This gives you the best of both worlds:
+1.  **Frontend**: **Vercel** (Fast, global CDN, optimized for React).
+2.  **API**: **Render** (Hosts Python Logic + Embeddings).
+3.  **Database**: **Render** (Hosts Endee Vector DB).
 
 ## Architecture
-You will create **two separate services** on Render:
-1.  **Endee Database**: A "Web Service" deployed from the root of your repo.
-2.  **Search App**: A "Web Service" deployed from the `pdf_search` folder.
+```mermaid
+graph TD
+    User[User Browser] -->|Visit URL| Vercel[Frontend (Vercel)]
+    Vercel -->|API Calls (fetch)| API[Python API (Render)]
+    API -->|Vectors| DB[Endee DB (Render)]
+```
 
 ---
 
-## Part 1: Deploy Endee Database Service
+## Part 1: Deploy Endee DB (Render)
+1.  Deploy the **Root Directory** to Render as a "Web Service".
+2.  **Name**: `endee-db`.
+3.  **Docker**: Yes.
+4.  Copy the internal address (e.g., `endee-db:8080`) or public URL if needed.
 
-1.  **Push** your code to GitHub.
-2.  Create a **New Web Service** on Render.
-3.  **Connect** your repository.
-4.  **Settings**:
-    - **Name**: `endee-db` (or similar)
-    - **Runtime**: `Docker`
-    - **Root Directory**: `.` (leave empty)
-    - **Plan**: Standard or Free (Note: C++ compilation might take time on Free tier).
-5.  **Deploy**.
-6.  Once deployed, copy the **Service URL** (e.g., `https://endee-db-xyz.onrender.com`).
-    - *Note:* Render exposes port 80/443 externally. Your internal app will connect via this URL.
+## Part 2: Deploy Python API (Render)
+1.  Deploy the **`pdf_search`** directory to Render as a "Web Service".
+2.  **Name**: `pdf-search-api`.
+3.  **Docker**: Yes.
+4.  **Env Vars**:
+    - `ENDEE_HOST`: URL of Part 1 (e.g., `endee-db-xyz.onrender.com`).
+    - `ENDEE_PORT`: `443` (for https) or `80`.
+5.  Copy the **API URL** (e.g., `https://pdf-search-api.onrender.com`).
 
----
-
-## Part 2: Deploy Search App Service
-
-1.  Create **Another New Web Service** on Render.
-2.  **Connect** the SAME repository.
-3.  **Settings**:
-    - **Name**: `pdf-search-app`
-    - **Runtime**: `Docker`
-    - **Root Directory**: `pdf_search` (Important!)
-4.  **Environment Variables**:
-    - `ENDEE_HOST`: Paste the URL from Part 1 (e.g., `endee-db-xyz.onrender.com`). **Remove `https://`**.
-    - `ENDEE_PORT`: `443` (Render handles SSL by default).
-    - `PORT`: `8000`
-5.  **Deploy**.
+## Part 3: Deploy Frontend (Vercel)
+1.  Import repo to Vercel.
+2.  **Root Directory**: Edit to `pdf_search/frontend`.
+3.  **Environment Variables**:
+    - `VITE_API_URL`: Paste the **API URL** from Part 2 (e.g., `https://pdf-search-api.onrender.com`).
+4.  **Deploy**.
 
 ---
 
-## Verification
-
-1.  Open the URL of your **Search App**.
-2.  Try uploading a PDF.
-3.  The App (Cloud) will talk to Endee (Cloud). No local computer required!
+## Why this is better?
+- **Faster UI**: Vercel is much faster at serving static assets than Python/Uvicorn.
+- **Cheaper**: You can often fit the API + DB on Render Free Tier separately (or scaling them independently).
+- **Separation**: Frontend crashes don't kill the API, and vice-versa.

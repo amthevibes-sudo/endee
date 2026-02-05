@@ -127,8 +127,12 @@ def reset():
     else:
         return {"status": "error", "message": "Reset failed"}
 
-# In production, serve React static files
-app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
+# Serve React static files (only if building as a monolith)
+# In Hybrid mode (Vercel + Render), this part is skipped or optional.
+if Path("frontend/dist").exists():
+    app.mount("/", StaticFiles(directory="frontend/dist", html=True), name="frontend")
+else:
+    print("INFO: Frontend dist not found. Running in API-only mode (Hybrid deployment).")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
