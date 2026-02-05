@@ -1,4 +1,6 @@
+# ==============================
 # STAGE 1: BUILDER
+# ==============================
 ARG BASE_IMAGE=debian:13-slim
 FROM ${BASE_IMAGE} AS builder
 
@@ -27,29 +29,27 @@ COPY ./third_party /build_space/third_party
 COPY ./CMakeLists.txt /build_space/CMakeLists.txt
 COPY ./install.sh /build_space/install.sh
 
-# Run build script
-ARG BUILD_ARCH
-ENV BUILD_ARCH=${BUILD_ARCH}
+# Build arguments with safe defaults
+ARG BUILD_ARCH=avx2
 ARG DEBUG=false
-ENV DEBUG=${DEBUG}
-RUN chmod +x ./install.sh && \
-    if [ -z "${BUILD_ARCH}" ]; then \
-    if [ "$DEBUG" = "true" ]; then \
-    ./install.sh --debug_all --skip-deps; \
-    else \
-    ./install.sh --release --skip-deps; \
-    fi && \
-    cp ./build/ndd ./ndd-server; \
-    else \
-    if [ "$DEBUG" = "true" ]; then \
-    ./install.sh --${BUILD_ARCH} --debug_all --skip-deps; \
-    else \
-    ./install.sh --${BUILD_ARCH} --release --skip-deps; \
-    fi && \
-    cp ./build/ndd-${BUILD_ARCH} ./ndd-server; \
-    fi
 
+ENV BUILD_ARCH=${BUILD_ARCH}
+ENV DEBUG=${DEBUG}
+
+# Run build script
+RUN chmod +x ./install.sh && \
+    ARCH_FLAG="--${BUILD_ARCH}" && \
+    if [ "$DEBUG" = "true" ]; then \
+    ./install.sh $ARCH_FLAG --debug_all --skip-deps; \
+    else \
+    ./install.sh $ARCH_FLAG --release --skip-deps; \
+    fi && \
+    cp ./build/ndd-${BUILD_ARCH} ./ndd-server
+
+
+# ==============================
 # STAGE 2: RUNTIME
+# ==============================
 FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -57,7 +57,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8 \
     PATH=/usr/local/bin:$PATH
 
-# Install runtime dependencies (no dev tools)
+# Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
     libcurl4 \
@@ -77,14 +77,14 @@ RUN groupadd -r -g 1000 endee && \
 COPY --from=builder /build_space/ndd-server /usr/local/bin/ndd-server
 RUN chmod +x /usr/local/bin/ndd-server
 
-# Copy frontend
+# Copy frontend (if generated during build)
 COPY --from=builder /build_space/frontend /usr/local/frontend
 
 # Switch to non-root user
 USER endee
 WORKDIR /home/endee
 
-# App env
+# App environment variables
 ENV NDD_DATA_DIR=/data \
     NDD_SERVER_PORT=8080 \
     NDD_LOG_LEVEL=info \
