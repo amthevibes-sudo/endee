@@ -44,19 +44,19 @@ namespace settings {
     // We allow some extra neighbors before pruning
     constexpr size_t MAX_EXTRA_NEIGHBORS = 3;
 
-    // MDBX default map sizes. Growth step and initial size are the same for all databases.
+    // MDBX default map sizes. TUNED FOR 512MB RAM (Free Tier)
     // System tables
-    constexpr size_t INDEX_META_MAP_SIZE_BITS = 21;      // 2 MiB
-    constexpr size_t INDEX_META_MAP_SIZE_MAX_BITS = 27;  // 128 MiB
+    constexpr size_t INDEX_META_MAP_SIZE_BITS = 18;      // 256 KiB
+    constexpr size_t INDEX_META_MAP_SIZE_MAX_BITS = 24;  // 16 MiB
     // Index-related tables
-    constexpr size_t ID_MAPPER_MAP_SIZE_BITS = 24;      // 16 MiB
-    constexpr size_t ID_MAPPER_MAP_SIZE_MAX_BITS = 33;  // 8 GiB
-    constexpr size_t FILTER_MAP_SIZE_BITS = 24;         // 16 MiB
-    constexpr size_t FILTER_MAP_SIZE_MAX_BITS = 36;     // 64 GiB
-    constexpr size_t METADATA_MAP_SIZE_BITS = 27;       // 128 MiB
-    constexpr size_t METADATA_MAP_SIZE_MAX_BITS = 39;   // 512 GiB
-    constexpr size_t VECTOR_MAP_SIZE_BITS = 30;         // 1 GiB
-    constexpr size_t VECTOR_MAP_SIZE_MAX_BITS = 42;     // 4 TiB
+    constexpr size_t ID_MAPPER_MAP_SIZE_BITS = 20;      // 1 MiB
+    constexpr size_t ID_MAPPER_MAP_SIZE_MAX_BITS = 26;  // 64 MiB
+    constexpr size_t FILTER_MAP_SIZE_BITS = 20;         // 1 MiB
+    constexpr size_t FILTER_MAP_SIZE_MAX_BITS = 28;     // 256 MiB
+    constexpr size_t METADATA_MAP_SIZE_BITS = 24;       // 16 MiB
+    constexpr size_t METADATA_MAP_SIZE_MAX_BITS = 30;   // 1 GiB
+    constexpr size_t VECTOR_MAP_SIZE_BITS = 27;         // 128 MiB (Was 1GB!)
+    constexpr size_t VECTOR_MAP_SIZE_MAX_BITS = 36;     // 64 GiB
 
     constexpr size_t MAX_LINK_LIST_LOCKS = 65536;
 
