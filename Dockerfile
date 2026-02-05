@@ -92,11 +92,7 @@ LABEL org.opencontainers.image.description="Endee Open Source"
 LABEL org.opencontainers.image.url="https://endee.io/"
 LABEL org.opencontainers.image.documentation="https://docs.endee.io/"
 LABEL org.opencontainers.image.vendor="Endee Labs"
-#To be updated
 LABEL org.opencontainers.image.source=""
 
-
-# Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/ndd-server"]
-
 CMD []

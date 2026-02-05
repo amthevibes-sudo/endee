@@ -1,58 +1,48 @@
-# Deployment Guide: Split Hosting (Recommended)
+# Deployment Guide: Full Cloud (Endee + App)
 
-This guide splits the application into two parts for easier deployment:
-1.  **Frontend (React)**: Hosted on **Vercel**.
-2.  **Backend (Python API)**: Hosted on **Railway** (or PythonAnywhere).
+This guide helps you deploy **both** the Endee Database and the PDF Search App to the cloud (Render), removing the need for local tunnels.
 
-## Prerequisites
-- **Endee Server**: Running on your Mac.
-- **Localtunnel**: Running on your Mac to expose Endee (`npx localtunnel --port 8080`).
-- **GitHub**: You must have this code pushed to GitHub.
+## Architecture
+You will create **two separate services** on Render:
+1.  **Endee Database**: A "Web Service" deployed from the root of your repo.
+2.  **Search App**: A "Web Service" deployed from the `pdf_search` folder.
 
 ---
 
-## Part 1: Deploy Backend (Railway)
+## Part 1: Deploy Endee Database Service
 
-1.  **Sign up/Login** to [Railway.app](https://railway.app/).
-2.  **New Project** > **Deploy from GitHub repo**.
-3.  Select this repository.
-4.  Railway will auto-detect the `requirements.txt` and `Procfile`.
-5.  **Variables**: Go to the **Settings/Variables** tab for the new service and add:
-    - `ENDEE_HOST`: `<your-localtunnel-url>` (e.g., `calm-zebra-45.loca.lt`) - *Remove https://*
-    - `ENDEE_PORT`: `80` (or `443` if usage HTTPS)
-    - `PORT`: `8000` (Railway provides this automatically usually, but good to be safe)
-6.  **Public Networking**: Go to **Settings** > **Networking** and Generate a Domain.
-    - Copy this URL (e.g., `web-production-1234.up.railway.app`). **This is your BACKEND_URL.**
-
----
-
-## Part 2: Deploy Frontend (Vercel)
-
-1.  **Sign up/Login** to [Vercel.com](https://vercel.com/).
-2.  **Add New Framework Project**.
-3.  Import from **GitHub**.
-4.  **ROOT DIRECTORY**:
-    - **CRITICAL**: Click "Edit" next to Root Directory and select `pdf_search/frontend`.
-5.  **Environment Variables**:
-    - Add `VITE_API_URL`: Paste your **BACKEND_URL** (e.g., `https://web-production-1234.up.railway.app`).
-6.  **Deploy**.
+1.  **Push** your code to GitHub.
+2.  Create a **New Web Service** on Render.
+3.  **Connect** your repository.
+4.  **Settings**:
+    - **Name**: `endee-db` (or similar)
+    - **Runtime**: `Docker`
+    - **Root Directory**: `.` (leave empty)
+    - **Plan**: Standard or Free (Note: C++ compilation might take time on Free tier).
+5.  **Deploy**.
+6.  Once deployed, copy the **Service URL** (e.g., `https://endee-db-xyz.onrender.com`).
+    - *Note:* Render exposes port 80/443 externally. Your internal app will connect via this URL.
 
 ---
 
-## Part 3: Verify
+## Part 2: Deploy Search App Service
 
-1.  Open your Vercel App URL.
-2.  It should load the UI.
-3.  The UI will try to talk to `VITE_API_URL` (Railway).
-4.  Railway will talk to `ENDEE_HOST` (Your Mac via Localtunnel).
+1.  Create **Another New Web Service** on Render.
+2.  **Connect** the SAME repository.
+3.  **Settings**:
+    - **Name**: `pdf-search-app`
+    - **Runtime**: `Docker`
+    - **Root Directory**: `pdf_search` (Important!)
+4.  **Environment Variables**:
+    - `ENDEE_HOST`: Paste the URL from Part 1 (e.g., `endee-db-xyz.onrender.com`). **Remove `https://`**.
+    - `ENDEE_PORT`: `443` (Render handles SSL by default).
+    - `PORT`: `8000`
+5.  **Deploy**.
 
 ---
 
-## Local Development (Optional)
+## Verification
 
-To run locally with this new setup:
-1.  **Backend**: `uvicorn api:app --reload`
-2.  **Frontend**:
-    - Create a `.env` file in `frontend/`.
-    - Add `VITE_API_URL=http://localhost:8000`
-    - Run `npm run dev`.
+1.  Open the URL of your **Search App**.
+2.  Try uploading a PDF.
+3.  The App (Cloud) will talk to Endee (Cloud). No local computer required!
