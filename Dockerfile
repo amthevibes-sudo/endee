@@ -33,12 +33,21 @@ ENV BUILD_ARCH=${BUILD_ARCH}
 ARG DEBUG=false
 ENV DEBUG=${DEBUG}
 RUN chmod +x ./install.sh && \
+    if [ -z "${BUILD_ARCH}" ]; then \
     if [ "$DEBUG" = "true" ]; then \
-        ./install.sh --${BUILD_ARCH} --debug_all --skip-deps; \
+    ./install.sh --debug_all --skip-deps; \
     else \
-        ./install.sh --${BUILD_ARCH} --release --skip-deps; \
+    ./install.sh --release --skip-deps; \
     fi && \
-    cp ./build/ndd-${BUILD_ARCH} ./ndd-server
+    cp ./build/ndd ./ndd-server; \
+    else \
+    if [ "$DEBUG" = "true" ]; then \
+    ./install.sh --${BUILD_ARCH} --debug_all --skip-deps; \
+    else \
+    ./install.sh --${BUILD_ARCH} --release --skip-deps; \
+    fi && \
+    cp ./build/ndd-${BUILD_ARCH} ./ndd-server; \
+    fi
 
 # STAGE 2: RUNTIME
 FROM ${BASE_IMAGE}
@@ -85,7 +94,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8080/api/v1/health || exit 1
+    CMD curl -f http://localhost:8080/api/v1/health || exit 1
 
 LABEL org.opencontainers.image.title="endee-oss"
 LABEL org.opencontainers.image.description="Endee Open Source"
