@@ -1,16 +1,16 @@
 # Stage 1: Build the React Frontend
 FROM node:18-slim as build-frontend
 
-WORKDIR /app/frontend
+WORKDIR /app_build
 
-# Copy package.json and package-lock.json (if available)
-COPY frontend/package*.json ./
+# Copy entire project to build context to avoid path issues
+COPY . .
+
+# Move to frontend directory
+WORKDIR /app_build/frontend
 
 # Install dependencies
 RUN npm ci
-
-# Copy the rest of the frontend source code
-COPY frontend .
 
 # Build the frontend
 RUN npm run build
@@ -36,7 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy built frontend from the previous stage
-COPY --from=build-frontend /app/frontend/dist ./frontend/dist
+COPY --from=build-frontend /app_build/frontend/dist ./frontend/dist
 
 # Expose the API port
 EXPOSE 8000
