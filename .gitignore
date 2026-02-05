@@ -1,25 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+*.egg-info/
 
-# Ignore build directory
+# Build folders
 build/
-# Ignore build like directory
 build*/
-# Ignore all files in the build directory
-build/*
-
-# Ignore tests build directory
 tests/build/
 
-# Sometimes data files are created for tetsing
+# Data
 data/
 data/*
 
-# VS Code directory
+# VS Code
 .vscode/
-.vscode/*
 
-# Frontend
-frontend/
-frontend/*
-
-# DS Store
+# macOS
 .DS_Store
+
+# Frontend dependencies
+pdf_search/frontend/node_modules/
+
+# Frontend build output
+pdf_search/frontend/dist/
+pdf_search/frontend/build/
