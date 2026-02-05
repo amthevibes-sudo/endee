@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "C:\new\endee\Endee4\endee\pdf_search\api.py", line 18, in <module>
+    from search_engine import SemanticSearchEngine
+  File "C:\new\endee\Endee4\endee\pdf_search\search_engine.py", line 13, in <module>
+    class SemanticSearchEngine:
+  File "C:\new\endee\Endee4\endee\pdf_search\search_engine.py", line 34, in SemanticSearchEngine
+    def ingest_pdfs(self, pdf_source: Optional[Path] = None) -> Tuple[bool, str]:
+                                                                ^^^^^
+NameError: name 'Tuple' is not defined. Did you mean: 'tuple'?

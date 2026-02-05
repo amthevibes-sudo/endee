@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pdf-search-app
+    runtime: docker
+    plan: free
+    envVars:
+      - key: ENDEE_HOST
+        sync: false
+      - key: ENDEE_PORT
+        value: 80
+      - key: PORT
+        value: 8000
